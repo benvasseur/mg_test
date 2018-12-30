@@ -2,7 +2,7 @@
     <div>
         <div class="position-fixed w-100" v-if="dismissCountDown>0">
             <b-alert variant="success"
-                    class="col-md-6 mx-auto mt-3"
+                    class="col-lg-4 col-md-6 col-sm-8 mx-auto mt-3"
                     dismissible
                     :show="dismissCountDown"
                     fade
@@ -15,7 +15,7 @@
         <b-jumbotron :header="title" class="text-center" fluid>
         </b-jumbotron>
 
-        <b-card title="Update user profile" class="col-md-6 mx-auto mt-5">
+        <b-card title="Update user profile" class="col-lg-4 col-md-6 col-sm-8 mx-auto mt-5">
             <div class="card-text">
 
                 <b-form @submit.prevent="update" novalidate>
@@ -152,9 +152,9 @@ export default {
             this.dismissCountDown = dismissCountDown
         },
 
-        update() {
+        async update() {
             if (this.validate()) {
-                this.updateUser()
+                await this.updateUser(this.form)
                 this.init()
                 this.showAlert()
             }

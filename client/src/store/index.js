@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import api from '../api'
+import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex)
 
@@ -9,7 +10,8 @@ export default new Vuex.Store({
         userId: null,
         userName: null,
         userEmail: null,
-        userPicture: null
+        userPicture: null,
+        userToken: null
         // userId: 1,
         // userName: 'Benjamin',
         // userEmail: 'benvasseur59@gmail.com',
@@ -24,6 +26,9 @@ export default new Vuex.Store({
         },
         getUserEmail(state){
             return state.userEmail
+        },
+        getUserToken(state){
+            return state.userToken
         },
         getUserPicture(state){
             return state.userPicture
@@ -40,54 +45,47 @@ export default new Vuex.Store({
             if (user.email) {
                 state.userEmail = user.email;
             }
+            if (user.token) {
+                state.userToken = user.token;
+            }
         },
-        removeUserId(state) {
-            state.userId = null;
-        }
+        removeUser(state) {
+            state.userId = null
+            state.userName= null
+            state.userEmail= null
+            state.userPicture= null
+            state.userToken= null        }
     },
     actions: {
-        async registerUser ({ commit }) {
-            return new Promise((resolve, reject) => {
-                // call register api...
-                const user = {
-                    id: 1,
-                    name: 'Benjamin',
-                    email: 'benvasseur59@gmail.com',
-                }
-                commit('setUser', user)
-            })
-        },
-        async loginUser ({ commit }) {
-            await api.login({
-                email: 'benvasseur59@gmail.com',
-                password: '123'
-            })
+        async registerUser ({ commit }, data) {
+            const response = await api.register(data)
+            console.log('response', response)
 
-            const user = {
-                id: 1,
-                name: 'Benjamin',
-                email: 'benvasseur59@gmail.com',
-            }
+            const user = response.data.user
+            user.token = response.data.token 
+
             commit('setUser', user)
-            
-            return user
         },
-        async updateUser ({ commit }) {
-            return new Promise((resolve, reject) => {
-                // call update api...
-                const user = {
-                    id: 1,
-                    name: 'Benjamin2',
-                    email: 'benvasseur59@gmail.com',
-                }
-                commit('setUser', user)
-            })
+        async loginUser ({ commit }, credentials) {
+            const response = await api.login(credentials)
+            console.log('response', response)
+
+            const user = response.data.user
+            user.token = response.data.token
+
+            commit('setUser', user)
+        },
+        async updateUser ({ commit, state }, data) {
+            const response = await api.update(state.userId, data)
+            console.log('response', response)
+
+            const user = response.data
+
+            commit('setUser', user)
         },
         logoutUser ({ commit }) {
-            return new Promise((resolve, reject) => {
-                // call login api...
-                commit('removeUserId')
-            })
+            commit('removeUser')
         }
-    }
+    },
+    plugins: [createPersistedState()]
 })

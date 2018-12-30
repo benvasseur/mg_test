@@ -1,5 +1,5 @@
 <template>
-    <b-card title="Register" class="col-md-6 mx-auto mt-5">
+    <b-card title="Register" class="col-lg-4 col-md-6 col-sm-8 mx-auto mt-5">
         <div class="card-text">
 
             <b-form @submit.prevent="register" novalidate>
@@ -40,7 +40,7 @@
                 </b-form-group>
 
                 <b-form-group id="registerPasswordConfirmation"
-                                label="Password:"
+                                label="Confirm password:"
                                 label-for="registerPasswordInputConfirmation">
                     <b-form-input id="registerPasswordInputConfirmation"
                                 type="password"
@@ -132,9 +132,9 @@ export default {
             return re.test(String(email).toLowerCase());
         },
 
-        register() {
+        async register() {
             if (this.validate()) {
-                this.registerUser()
+                await this.registerUser(this.form)
                 this.$router.push({name: 'profile'})
             }
         }

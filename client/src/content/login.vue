@@ -1,6 +1,6 @@
 <template>
     
-    <b-card title="Login" class="col-md-6 mx-auto mt-5">
+    <b-card title="Login" class="col-lg-4 col-md-6 col-sm-8 mx-auto mt-5">
         <div class="card-text">
 
             <b-form @submit.prevent="login" novalidate>
@@ -91,9 +91,9 @@ export default {
             return re.test(String(email).toLowerCase());
         },
 
-        login() {
+        async login() {
             if (this.validate()) {
-                this.loginUser()
+                await this.loginUser(this.form)
                 this.$router.push({name: 'profile'})
             }
         }
