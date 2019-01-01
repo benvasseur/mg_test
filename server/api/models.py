@@ -36,13 +36,12 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 class User(AbstractUser):
-    """User model."""
+    """Custom User model to avoid username"""
 
     username = None
     email = models.EmailField(_('email address'), unique=True)
     name = models.CharField(max_length=100, blank=True, default='')
     profile_picture = models.CharField(max_length=100, blank=True, default='')
-    file = models.FileField(blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

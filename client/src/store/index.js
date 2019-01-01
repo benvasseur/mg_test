@@ -12,14 +12,13 @@ export default new Vuex.Store({
         userEmail: null,
         userPicture: null,
         userToken: null
-        // userId: 1,
-        // userName: 'Benjamin',
-        // userEmail: 'benvasseur59@gmail.com',
-        // userPicture: 'https://avatars3.githubusercontent.com/u/46235560?s=400&u=82b48466224450807786b1461dd8010a86ed7cde&v=4',
     },
     getters: {
         isLoggedIn(state){
             return !!state.userId
+        },
+        getUserId(state){
+            return state.userId
         },
         getUserName(state){
             return state.userName
@@ -44,6 +43,9 @@ export default new Vuex.Store({
             }
             if (user.email) {
                 state.userEmail = user.email;
+            }
+            if (user.profile_picture) {
+                state.userPicture = user.profile_picture;
             }
             if (user.token) {
                 state.userToken = user.token;
@@ -77,6 +79,17 @@ export default new Vuex.Store({
         },
         async updateUser ({ commit, state }, data) {
             const response = await api.update(state.userId, data)
+            console.log('response', response)
+
+            const user = response.data
+
+            commit('setUser', user)
+        },
+        async updateUserProfilePic ({ commit, state }, file) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await api.updateProfilePic(state.userId, formData)
             console.log('response', response)
 
             const user = response.data

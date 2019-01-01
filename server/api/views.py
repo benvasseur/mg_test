@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from api.serializers import UserSerializer
 from rest_framework import permissions
-# from api.permissions import IsOwnerOrReadOnly
 from rest_framework.authtoken.models import Token
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
@@ -18,24 +17,16 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+from rest_framework.parsers import MultiPartParser
 import boto3
+import os
+
 
 class UserList(generics.ListAPIView):
     """Get list of user or create one
-
-    get:
-    Return a list of all the existing users.
-
-    post:
-    Create a new user instance.
     """
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
-# class UserDetail(generics.RetrieveAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
 
 class UserDetail(APIView):
     """
@@ -65,50 +56,68 @@ class UserDetail(APIView):
         user.delete()
         return Response(status=HTTP_404_NOT_FOUND)
 
+class FileUploadView(APIView):
+    """Upload profile picture to s3 and delete old one if exist
+    """
+    parser_classes = (MultiPartParser,)
 
-# class UserPicture(APIView):
+    def put(self, request, pk):
+        file_obj = request.FILES['file']
+        user = User.objects.get(pk=pk)
 
-    # model = User
-    # fields = ['upload', ]
+        print(user)
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     user = User.objects.all()
-    #     context['user'] = user
-    #     return context
+        # S3 client init
+        client = boto3.resource(
+            's3',
+            aws_access_key_id='AKIAI2NK57GGZPQY6KMQ',
+            aws_secret_access_key='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',
+        )
 
-        
-    # def put(self, request, pk):
-    #     # print(pk)
-    #     file = request.data.get("file")
-    #     print(file)
-    #     if file is not None:
-            
-    #         client = boto3.resource(
-    #             's3',
-    #             # I would not hard code this in real project...
-    #             aws_access_key_id='AKIAI2NK57GGZPQY6KMQ',
-    #             aws_secret_access_key='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',
-    #         )
+        if user.profile_picture != '':
+            # Remove old file if exist
+            old_key = user.profile_picture.replace('https://s3.ap-northeast-2.amazonaws.com/storage-mg/', '')
+            client.Bucket('storage-mg').delete_objects(Delete={
+                'Objects': [
+                    {
+                        'Key': old_key,
+                    },
+                ],
+            },)
 
-    #         # Print out bucket names for testing purpose
-    #         for bucket in client.buckets.all():
-    #             print(bucket.name)
+        # Upload new file to s3
+        data = file_obj.read()
+        filename, file_extension = os.path.splitext(file_obj.name)
 
-    #     return Response({"ok"}, status=HTTP_200_OK)
+        key = 'user/%s/%s%s'%(pk, filename, file_extension)
+        client.Bucket('storage-mg').put_object(Key=key, Body=data)
+
+        # Save image path to User
+        user = User.objects.get(pk=pk)
+        user.profile_picture = 'https://s3.ap-northeast-2.amazonaws.com/storage-mg/%s'%(key)
+        user.save()
+        user = UserSerializer(user)
+
+        return Response(user.data, status=200)
 
 class AuthLogin(APIView):
+    """Authenticate user and return token and user data
+    """
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+        
+        # Check required fields
         if email is None or password is None:
             return Response({'error': 'Please provide both email and password'},
                             status=HTTP_400_BAD_REQUEST)
 
+        # Check if password match email
         user = User.objects.get(email=email)
         if not user.check_password(password):
             return Response({'error': 'Invalid Credentials'}, status=HTTP_404_NOT_FOUND)
 
+        # Generate token and return user object and token
         token, _ = Token.objects.get_or_create(user=user)
         user = UserSerializer(user)
         return Response({
@@ -117,23 +126,27 @@ class AuthLogin(APIView):
         }, status=HTTP_200_OK)
 
 class AuthRegister(APIView):
+    """Register and login user
+    """
     def post(self, request):
         email = request.data.get("email")
         name = request.data.get("name")
         password = request.data.get("password")
-        passwordConfirmation = request.data.get("passwordConfirmation")
+        password_confirmation = request.data.get("passwordConfirmation")
 
+        # Check fields
         if email is None or name is None or password is None:
             return Response({'error': 'Please provide all required fields'},
                             status=HTTP_400_BAD_REQUEST)
-        
-        if password != passwordConfirmation:
-            return Response({'error': 'Password and passwordCOnfirmation don\'t match'},
+
+        if password != password_confirmation:
+            return Response({'error': 'Password and passwordConfirmation don\'t match'},
                             status=HTTP_400_BAD_REQUEST)
         
         # create fields by fields to not save unnecessary fields (username)
         user = User.objects.create(email=email, name=name, password=make_password(password))
 
+        # Generate token and return user object and token
         token, _ = Token.objects.get_or_create(user=user)
         user = UserSerializer(user)
         return Response({

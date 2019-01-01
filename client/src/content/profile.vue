@@ -30,9 +30,10 @@
                         alt="thumb" 
                         class="m-1" />
                     <b-form-group id="updateName">
-                        <b-form-file v-model="form.file" 
+                        <b-form-file v-model="file" 
                             id="updateFileInput"
                             plain
+                            @change="newFile"
                             placeholder="Choose a profile picture"></b-form-file>
                     </b-form-group>
                     
@@ -75,8 +76,8 @@ import { mapGetters, mapActions } from 'vuex'
 export default {
     data () {
         return {
+            file: null,
             form: {
-                file: null,
                 name: '',
                 email: ''
             },
@@ -91,6 +92,7 @@ export default {
 
     computed: {
         ...mapGetters([
+            'getUserId',
             'getUserName',
             'getUserEmail',
             'getUserPicture'
@@ -103,12 +105,23 @@ export default {
 
     methods: {
         ...mapActions([
-            'updateUser'
+            'updateUser',
+            'updateUserProfilePic'
         ]),
 
         init() {
             this.form.name = this.getUserName
             this.form.email = this.getUserEmail
+            this.file = null
+        },
+
+        async newFile(event){
+            console.log('file', this.file)
+            const that = this
+            setTimeout(async function(){
+                await that.updateUserProfilePic(that.file)
+                that.init()
+            }, 10);
         },
 
         validate() {

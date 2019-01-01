@@ -12,6 +12,14 @@ const api = {
     },
     update(id, data) {
         return axios.put(`${BASE_URL}/api/users/${id}`, data);
+    },
+    updateProfilePic(id, data) {
+        return axios.put(`${BASE_URL}/api/users/picture/${id}`, data, {
+            headers: {
+            //   'Content-Type': 'multipart/form-data'
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
     }
 }
 
