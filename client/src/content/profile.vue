@@ -121,6 +121,7 @@ export default {
             setTimeout(async function(){
                 await that.updateUserProfilePic(that.file)
                 that.init()
+                that.showAlert()
             }, 10);
         },
 

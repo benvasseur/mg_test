@@ -16,7 +16,6 @@ const api = {
     updateProfilePic(id, data) {
         return axios.put(`${BASE_URL}/api/users/picture/${id}`, data, {
             headers: {
-            //   'Content-Type': 'multipart/form-data'
               'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
