@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'storages',
     'api.apps.ApiConfig',
 ]
 
@@ -136,3 +137,7 @@ REST_FRAMEWORK = {
 
 # User substitution
 AUTH_USER_MODEL = 'api.User'
+
+AWS_ACCESS_KEY_ID = 'AKIAI2NK57GGZPQY6KMQ'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'storage-mg'

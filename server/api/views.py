@@ -18,6 +18,8 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+import boto3
+
 class UserList(generics.ListAPIView):
     """Get list of user or create one
 
@@ -62,6 +64,38 @@ class UserDetail(APIView):
         user = self.get_object(pk)
         user.delete()
         return Response(status=HTTP_404_NOT_FOUND)
+
+
+# class UserPicture(APIView):
+
+    # model = User
+    # fields = ['upload', ]
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     user = User.objects.all()
+    #     context['user'] = user
+    #     return context
+
+        
+    # def put(self, request, pk):
+    #     # print(pk)
+    #     file = request.data.get("file")
+    #     print(file)
+    #     if file is not None:
+            
+    #         client = boto3.resource(
+    #             's3',
+    #             # I would not hard code this in real project...
+    #             aws_access_key_id='AKIAI2NK57GGZPQY6KMQ',
+    #             aws_secret_access_key='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',
+    #         )
+
+    #         # Print out bucket names for testing purpose
+    #         for bucket in client.buckets.all():
+    #             print(bucket.name)
+
+    #     return Response({"ok"}, status=HTTP_200_OK)
 
 class AuthLogin(APIView):
     def post(self, request):
